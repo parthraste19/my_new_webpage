@@ -17,7 +17,7 @@
         <button type="submit">Submit</button>
     </form>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.2.0/mqttws31.min.js"></script>
+    <script src="mqttws31.min.js"></script>
     <script>
         var client = new Paho.MQTT.Client('mqtt-io.adafruit.com', 443, 'web_mqtt_client');
         client.onConnectionLost = onConnectionLost;
