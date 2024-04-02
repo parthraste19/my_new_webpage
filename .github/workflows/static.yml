@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fan Control</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+    }
+    .container {
+        margin-top: 50px;
+    }
+    .slider {
+        width: 50%;
+        margin: 20px auto;
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fan Control</h1>
+        <form id="fanForm">
+            <label>
+                <input type="radio" name="fan" value="on"> Turn On Fan
+            </label>
+            <label>
+                <input type="radio" name="fan" value="off" checked> Turn Off Fan
+            </label>
+            <br><br>
+            <input type="range" min="1" max="5" value="1" class="slider" id="speedRange">
+            <p>Speed: <span id="speedValue">1</span></p>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@adafuit/Adafruit_MQTT.js"></script>
+    <script>
+        // Adafruit IO MQTT Configuration
+        const Adafruit_IO_USERNAME = 'parth_raste';
+        const Adafruit_IO_KEY = 'aio_fLhM85uClpVgp3U6xCj5c9E1j7Zk';
+        const aio = new AdafruitIO(Adafruit_IO_USERNAME, Adafruit_IO_KEY);
+
+        // Get references to elements
+        const fanForm = document.getElementById('fanForm');
+        const speedRange = document.getElementById('speedRange');
+        const speedValue = document.getElementById('speedValue');
+
+        // Add event listener for slider input
+        speedRange.addEventListener('input', function() {
+            speedValue.textContent = this.value;
+        });
+
+        // Add event listener for form submission
+        fanForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            const formData = new FormData(fanForm);
+            const fanStatus = formData.get('fan');
+            const fanSpeed = speedRange.value;
+            sendDataToAdafruitIO(fanStatus, fanSpeed);
+        });
+
+        // Function to send data to Adafruit IO
+        function sendDataToAdafruitIO(status, speed) {
+            const feedName = 'my_web_page'; // Replace with your feed name
+            const mqttTopic = `/${Adafruit_IO_USERNAME}/feeds/${feedName}`;
+            const mqttClient = aio.MQTT.connect();
+            mqttClient.on('connect', function () {
+                console.log('Connected to Adafruit IO');
+                const payload = JSON.stringify({ "status": status, "speed": speed });
+                mqttClient.publish(mqttTopic, payload);
+                console.log('Data published to Adafruit IO');
+                mqttClient.end(); // Close the connection
+            });
+            mqttClient.on('error', function (error) {
+                console.error('Error connecting to Adafruit IO: ', error);
+            });
+        }
+    </script>
+</body>
+</html>
