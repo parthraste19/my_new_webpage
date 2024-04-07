@@ -1,62 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fan Control</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fan Control</title>
 </head>
 <body>
     <h1>Fan Control</h1>
     <form id="fanForm">
-        <label>
-            <input type="radio" name="fan" value="on"> Turn On Fan
-        </label>
-        <label>
-            <input type="radio" name="fan" value="off"> Turn Off Fan
-        </label>
-        <button type="submit">Submit</button>
+        <label for="fanOn">Turn Fan On:</label>
+        <input type="radio" id="fanOn" name="fan" value="on">
+        <br>
+        <label for="fanOff">Turn Fan Off:</label>
+        <input type="radio" id="fanOff" name="fan" value="off">
+        <br>
+        <label for="fanSpeed">Fan Speed:</label>
+        <input type="range" id="fanSpeed" name="speed" min="1" max="5" value="3">
+        <span id="speedValue">3</span>
+        <br>
+        <label for="mode">Mode:</label>
+        <select id="mode" name="mode">
+            <option value="manual">Manual</option>
+            <option value="auto">Auto</option>
+        </select>
+        <br>
+        <button type="button" onclick="sendData()">Submit</button>
     </form>
 
-    <script src="mqttws31.min.js"></script>
-    <script>
-        var client = new Paho.MQTT.Client('mqtt-io.adafruit.com', 443, 'web_mqtt_client');
-        client.onConnectionLost = onConnectionLost;
-        client.connect({
-            useSSL: true,
-            userName: 'your_username',
-            password: 'your_mqtt_api_key',
-            onSuccess: onConnect,
-            onFailure: onFailure
+            <h1>Adafruit IO Feed Monitor</h1>
+        <div id="temperature">Loading...</div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.2.7/mqtt.min.js"></script>
+        <script>
+        // Adafruit IO Setup
+        var AIO_USERNAME = 'parth_raste';
+        var AIO_KEY = 'aio_pnHE71jru24OCxHEteyTEirshY9t';
+        var FEED_NAME_COMMAND = 'my_web_page';
+        var FEED_NAME_TEMP_DATA = 'temp_data';
+
+        var client = mqtt.connect('wss://io.adafruit.com:443/mqtt/', {
+          username: AIO_USERNAME,
+          password: AIO_KEY
         });
 
-        function onConnect() {
-            console.log('Connected to Adafruit IO');
-        }
-
-        function onFailure(errorMessage) {
-            console.log('Failed to connect: ' + errorMessage.errorMessage);
-        }
-
-        function onConnectionLost(responseObject) {
-            if (responseObject.errorCode !== 0) {
-                console.log('Connection lost: ' + responseObject.errorMessage);
-            }
-        }
-
-        document.getElementById('fanForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent form submission
-            var formData = new FormData(this);
-            var fanStatus = formData.get('fan');
-            publishToAdafruitIO(fanStatus);
+        client.on('connect', function() {
+          console.log('Connected to Adafruit IO MQTT');
+          client.subscribe(AIO_USERNAME + '/feeds/' + FEED_NAME_TEMP_DATA);
         });
 
-        function publishToAdafruitIO(status) {
-            var topic = 'your_username/feeds/fan-control'; // Replace with your feed name
-            var message = new Paho.MQTT.Message(status);
-            message.destinationName = topic;
-            client.send(message);
-            console.log('Published message: ' + status);
-        }
-    </script>
+        client.on('message', function(topic, message) {
+          if (topic === AIO_USERNAME + '/feeds/' + FEED_NAME_COMMAND) {
+            var data = message.toString();
+            var value = data.value;
+            document.getElementById('temperature').textContent = 'Temperature: ' + data + ' °C';
+          }
+        });
+
+    //<script src="https://cdn.jsdelivr.net/npm/mqtt/dist/mqtt.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
