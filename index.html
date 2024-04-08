@@ -32,9 +32,13 @@
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.2.7/mqtt.min.js"></script>
         <script>
+
+        var password = prompt("Please Enter PassKey");
+        
+        console.log("Entered password:", password);
         // Adafruit IO Setup
         var AIO_USERNAME = 'parth_raste';
-        var AIO_KEY = 'aio_pnHE71jru24OCxHEteyTEirshY9t';
+        var AIO_KEY = password;
         var FEED_NAME_COMMAND = 'my_web_page';
         var FEED_NAME_TEMP_DATA = 'temp_data';
 
@@ -42,6 +46,16 @@
           username: AIO_USERNAME,
           password: AIO_KEY
         });
+        function sendData() {
+            const form = document.getElementById('fanForm');
+            const formData = new FormData(form);
+            const fanState = formData.get('fan');
+            const fanSpeed = formData.get('speed');
+            const mode = formData.get('mode');
+
+            // Publish data to Adafruit IO feed
+            client.publish('parth_raste/feeds/'+FEED_NAME_COMMAND, `${fanState},${fanSpeed},${mode}`);
+}
 
         client.on('connect', function() {
           console.log('Connected to Adafruit IO MQTT');
@@ -57,6 +71,5 @@
         });
 
     //<script src="https://cdn.jsdelivr.net/npm/mqtt/dist/mqtt.min.js"></script>
-    <script src="script.js"></script>
 </body>
 </html>
