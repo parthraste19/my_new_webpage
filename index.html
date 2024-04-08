@@ -55,7 +55,11 @@
 
             // Publish data to Adafruit IO feed
             client.publish('parth_raste/feeds/'+FEED_NAME_COMMAND, `${fanState},${fanSpeed},${mode}`);
-}
+        }
+        
+        document.getElementById('fanSpeed').addEventListener('input', function () {
+        document.getElementById('speedValue').textContent = this.value;
+        });
 
         client.on('connect', function() {
           console.log('Connected to Adafruit IO MQTT');
@@ -63,7 +67,7 @@
         });
 
         client.on('message', function(topic, message) {
-          if (topic === AIO_USERNAME + '/feeds/' + FEED_NAME_COMMAND) {
+          if (topic === AIO_USERNAME + '/feeds/' + FEED_NAME_TEMP_DATA) {
             var data = message.toString();
             var value = data.value;
             document.getElementById('temperature').textContent = 'Temperature: ' + data + ' °C';
